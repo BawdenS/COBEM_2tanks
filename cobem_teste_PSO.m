@@ -46,7 +46,7 @@ tempo_simu = 20;
 
 % function [Melhor, Dados_Internos, Dados_Externos, Melhor_sol] = Trab_final_V1_6(n,bird_setp)
 n = 50;           % Size of the swarm " no of birds "
-bird_setp = 10;   % Maximum number of "birds steps"
+bird_setp = 15;   % Maximum number of "birds steps"
 dim = 3;          % Dimension of the problem
 
 c2 = 2.05;        % PSO parameter C1 
@@ -74,13 +74,13 @@ G_ideal  = 21.9/((s+4.0530 - 2.34i)*(s+4.0530 + 2.34i));
 [GInum,GIden] = tfdata(G_ideal,'v');
 Saida_ideal = step(G_ideal);
 dado_saida = stepinfo(G_ideal);
-tempo_ideal = 21; % Passo simu 1e-3 e 
+tempo_ideal = tempo_simu+1; % Passo simu 1e-3 e 
 nome_g_ideal = 'cobem_g_ideal'; % nome arquivo simulink para comparar
 sim(nome_g_ideal); % simulação do sistema com saída ideal
-Vetor_obj = saida_ideal{1}.Values.Data; % sera usado na func custo
+Vetor_obj = saida_ideal{1}.Values.Data(1002:end); % sera usado na func custo
 [A,B] = sort(Vetor_obj);
 Overshoot = abs(Vetor_obj(B(end))-Vetor_obj(end))/Vetor_obj(B(end))*100; % calculo do overshoot em %
-Temporario = ((Vetor_obj((1000:end)))-(Vetor_obj((1000-1:end-1))));
+Temporario = Vetor_obj(end-1000:end)-Vetor_obj(end-1001:end-1);
 Cond_acom = mean(Temporario); % confere se acomodou
 
 %medicao tempo de acm
@@ -97,22 +97,22 @@ Temporario = 1; %flag
 for i = 1:1:size(Vetor_obj,1)
    if ((Vetor_obj(i) > Vetor_obj(end)*0.1) && (Temporario == 1))
        Temporario=0;
-       tempo_rising_0 = saida_ideal{1}.Values.Time(i); % pega tempo de subida min
+       tempo_rising_0 = saida_ideal{1}.Values.Time(1002+i); % pega tempo de subida min
    end
    if Vetor_obj(i) > Vetor_obj(end)*0.9
-       tempo_rising_1 = saida_ideal{1}.Values.Time(i); % pega tempo de subida max
+       tempo_rising_1 = saida_ideal{1}.Values.Time(1002+i); % pega tempo de subida max
    break;
    end
 end
 tempo_rising = tempo_rising_1 - tempo_rising_0; % tempo de subida
 %
 
-
+%%
 
 
 
 %   P  I  D                                       
-ub=[20 10 3]'; %/*upper bounds of the parameters. */
+ub=[100 50 15]'; %/*upper bounds of the parameters. */
 lb=[0.1 0.0 0]';%/*lower bound of the parameters.*/ 
 
 R1 = rand(dim, n);
@@ -199,7 +199,7 @@ while  ( iter < bird_setp )
         fprintf('iter=%d, fitness=%3f, Kp=%3f, Ki=%3f, Kd=%3f\n', iter,global_best_fitness,globl_best_position(1,1),globl_best_position(2,1),globl_best_position(3,1)); 
     end
     iter = iter + 1;
-    disp(current_position) % retirar
+    
     for i = 1:n
         Kp = abs(current_position(1,i));
         Ki = abs(current_position(2,i));
@@ -217,7 +217,7 @@ while  ( iter < bird_setp )
         custo_pico= 10* Overshoot_atual;
         
         
-        Temporario = ((Vetor_obj((1000:end)))-(Vetor_obj((1000-1:end-1))));
+        Temporario = ((Vetor_obj((end-1000:end)))-(Vetor_obj((end-1001:end-1))));
         custo_acom = 0;
         Cond_acom_atual = mean(Temporario); % confere se acomodou
         if Cond_acom_atual > 0.05
@@ -230,7 +230,7 @@ while  ( iter < bird_setp )
     for i = 1 : n
         if current_fitness(i) < local_best_fitness(i)
             local_best_fitness(i)  = current_fitness(i);  
-            disp("melhor posição: ", current_position(:,i))
+            disp("melhor posição: "+ current_position(:,i))
             local_best_position(:,i) = current_position(:,i)   ;
         end   
     end
