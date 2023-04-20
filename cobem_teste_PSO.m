@@ -45,8 +45,8 @@ tempo_simu = 20;
 
 
 % function [Melhor, Dados_Internos, Dados_Externos, Melhor_sol] = Trab_final_V1_6(n,bird_setp)
-n = 50;           % Size of the swarm " no of birds "
-bird_setp = 15;   % Maximum number of "birds steps"
+n = 10;           % Size of the swarm " no of birds "
+bird_setp = 10;   % Maximum number of "birds steps"
 dim = 3;          % Dimension of the problem
 
 c2 = 2.05;        % PSO parameter C1 
@@ -113,7 +113,7 @@ tempo_rising = tempo_rising_1 - tempo_rising_0; % tempo de subida
 
 %   P  I  D                                       
 ub=[100 50 15]'; %/*upper bounds of the parameters. */
-lb=[0.1 0.0 0]';%/*lower bound of the parameters.*/ 
+lb=[20 10 0]';%/*lower bound of the parameters.*/ 
 
 R1 = rand(dim, n);
 R2 = rand(dim, n);
