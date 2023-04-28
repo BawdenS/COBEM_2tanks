@@ -44,4 +44,13 @@
   
 % Executando a simulação
   open('TwoTanks_NL_2018a'); 
-  sim('TwoTanks_NL_2018a');
+  Saida = sim('TwoTanks_NL_2018a');
+  
+  
+  plot(Saida.Nivel_h1{1}.Values.Time,Saida.Nivel_h1{1}.Values.Data);
+  xlabel("Tempo[s]");
+  ylabel("Altura H1[m]");
+  figure();
+  plot(Saida.Nivel_h2{1}.Values.Time,Saida.Nivel_h2{1}.Values.Data);
+  xlabel("Tempo[s]");
+  ylabel("Altura H2[m]");
