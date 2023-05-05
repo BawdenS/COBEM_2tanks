@@ -13,6 +13,6 @@
     % title('Evolução Temporal do Nível H2', 'fontsize', 14);
     xlabel('t [s]', 'fontsize', 18); ylabel('H2 [m]', 'fontsize', 14);
 
-    subplot(3,1,3); plot(t,Ud,'b','LineWidth', LW); hold on; plot(tf,uf,'r--','LineWidth', LW);
+    subplot(3,1,3); plot(t,Fd,'b','LineWidth', LW); hold on; plot(tf,ff,'r--','LineWidth', LW);
     % title('Evolução Temporal do Sinal de Controle', 'fontsize', 14);
-    xlabel('t [s]', 'fontsize', 18); ylabel('U [?]', 'fontsize', 14);
+    xlabel('t [s]', 'fontsize', 18); ylabel('F [Hz]', 'fontsize', 14);
