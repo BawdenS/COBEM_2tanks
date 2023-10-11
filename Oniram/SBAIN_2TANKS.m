@@ -74,8 +74,8 @@ clc
 
 
 % function [Melhor, Dados_Internos, Dados_Externos, Melhor_sol] = Trab_final_V1_6(n,bird_setp)
-n = 100;           % Size of the swarm " no of birds "
-bird_setp = 10;   % Maximum number of "birds steps"
+n = 30;           % Size of the swarm " no of birds "
+bird_setp = 100;   % Maximum number of "birds steps"
 dim = 2;          % Dimension of the problem
 
 c2 = 2.05;        % PSO parameter C1 
@@ -97,6 +97,10 @@ Ki1 = 1;
 
 
 % IDEAL polos padrão Bessel
+% caso Gabriel
+h2_G = (ones(2501           ,1))*0.75;
+h1_G = (ones(2501           ,1))*0.4219;
+
 % Caso altura H2
 V_ideal = 0.75;
 G_ideal  = 21.9/((s+4.0530 - 2.34i)*(s+4.0530 + 2.34i));
@@ -181,7 +185,11 @@ tempo_rising_h1 = tempo_rising_1 - tempo_rising_0; % tempo de subida
 
 %   K0 K1                                       
 ub=[0.81 1.8]'; %/*upper bounds of the parameters. */
-lb=[0.04 0.4]';%/*lower bound of the parameters.*/ 
+lb=[0.04 0.4]';%/*lower bound of the parameters.*/  
+
+% %   K0 K1                                       
+% ub=[10 10]'; %/*upper bounds of the parameters. */
+% lb=[0.01 0.01]';%/*lower bound of the parameters.*/
 
 R1 = rand(dim, n);
 R2 = rand(dim, n);
@@ -191,7 +199,7 @@ current_fitness =0*ones(n,1);
                                  %------------------------------------------------%
                                  
 current_position = ub.*(rand(dim, n));
-velocity = .3*current_position;
+velocity = .01*current_position;
 local_best_position  = current_position ;
 
 
@@ -259,16 +267,31 @@ current_position = current_position + velocity ;
 
 best_fitness = zeros(bird_setp);
 zeros(dim,n);
+for i=1:n
+    ind=find(current_position(:,i)<lb);
+    current_position(ind,i)=lb(ind)+rand*0.3*lb(ind);
+
+    ind=find(current_position(:,i)>ub);
+    current_position(ind,i)=ub(ind)-rand*0.3*ub(ind);
+end
+
 %% Main Loop
 iter = 0 ;        % Iterations’counter
 % fprintf('iter=%d, fitness=%3f, Kp=%3f, Kd=%3f, Ki=%3f\n', iter,global_best_fitness,globl_best_position(1,1),globl_best_position(2,1),globl_best_position(3,1)); 
 while  ( iter < bird_setp )
-    if rem(iter,3) == 0
-        fprintf('iter=%d, fitness=%3f, Kp=%3f, Ki=%3f', iter,global_best_fitness,globl_best_position(1,1),globl_best_position(2,1)); 
+    if rem(iter,5) == 0
+        fprintf('iter=%d, fitness=%3f, Kp=%3f, Ki=%3f \n', iter,global_best_fitness,globl_best_position(1,1),globl_best_position(2,1)); 
     end
     iter = iter + 1;
     
     for i = 1:n
+        
+        ind=find(current_position(:,i)<lb);
+        current_position(ind,i)=lb(ind)+rand*0.3*lb(ind);
+
+        ind=find(current_position(:,i)>ub);
+        current_position(ind,i)=ub(ind)-rand*0.3*ub(ind);
+        
         K0 = abs(current_position(1,i));
         K1 = abs(current_position(2,i));
 %           p1 = 0.75; P1 = poly(-[p1 p1]); K1 = P1(1,2); K0 = P1(1,3);
@@ -277,12 +300,11 @@ while  ( iter < bird_setp )
         sim('TwoTanks_FO_2018a'); 
           %plotResultados_NL;
         
-        vetor_H1 = h1f;
-        
-        custo_area_erro_H1= sum(abs(Vetor_obj_H1-vetor_H1));
-        [A,B] = sort(vetor_H1);
-        Overshoot_atual = abs(vetor_H1(B(end))-vetor_H1(end))/vetor_H1(B(end)) *100; % calculo do overshoot em %
-        custo_pico_H1= 10* Overshoot_atual;  
+        vetor_H1 = h1f; %simulink -> workspace 
+        custo_area_erro_H1= abs(h1_G-vetor_H1);
+%         [A,B] = sort(vetor_H1);
+%         Overshoot_atual = abs(vetor_H1(B(end))-vetor_H1(end))/vetor_H1(B(end)) *100; % calculo do overshoot em %
+%         custo_pico_H1= 10* Overshoot_atual;  
         
         
         
@@ -295,19 +317,27 @@ while  ( iter < bird_setp )
         
         
           
-        vetor_comparar = h2f;
-        
-        custo_area_erro= sum(abs(Vetor_obj-vetor_comparar));
-        
+        vetor_H2 = h2f;        %simulink -> workspace 
+        custo_area_erro= abs(h2_G-vetor_H2);
         
         
-        [A,B] = sort(vetor_comparar);
-        Overshoot_atual = abs(vetor_comparar(B(end))-vetor_comparar(end))/vetor_comparar(B(end)) *100; % calculo do overshoot em %
-        custo_pico= 10* Overshoot_atual;
         
+%         [A,B] = sort(vetor_H2);
+%         Overshoot_atual = abs(vetor_H2(B(end))-vetor_H2(end))/vetor_H2(B(end)) *100; % calculo do overshoot em %
+%         custo_pico= 10* Overshoot_atual;
         
+%     temp= 0;
+%     for iter_temp = 1:length(t)
+%     temp = temp+ ((3*(abs(h2_G(iter_temp)-vetor_H2(iter_temp)))+1.5*(abs(h1_G(iter_temp)-vetor_H1(iter_temp))))^2)*t(iter_temp);
+% 
+%     end
 
-        current_fitness(i) = 2*custo_area_erro + 2*custo_pico + 1*custo_area_erro_H1 + 1*custo_pico_H1;
+
+%         current_fitness(i) = 2*custo_area_erro + 2*custo_pico + 1*custo_area_erro_H1 + 1*custo_pico_H1;
+        current_fitness(i) =  (t*((3*custo_area_erro + 1.5*custo_area_erro_H1).^2) )  ;
+%         current_fitness(i) = temp;
+%         temp_string = ['Valor do erro do Calculo: ',num2str(temp-current_fitness(i))];
+%         disp(temp_string);
     end
 
     for i = 1 : n
@@ -360,11 +390,10 @@ while  ( iter < bird_setp )
     current_position = abs(current_position + velocity); 
     for i=1:n
         ind=find(current_position(:,i)<lb);
-        current_position(ind,i)=lb(ind)+rand*ub(ind);
-    end
-    for i=1:n
+        current_position(ind,i)=lb(ind)+rand*0.3*lb(ind);
+
         ind=find(current_position(:,i)>ub);
-        current_position(ind,i)=ub(ind)-rand*ub(ind);
+        current_position(ind,i)=ub(ind)-rand*0.3*ub(ind);
     end
 
 
